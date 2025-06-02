@@ -18,6 +18,42 @@ struct Node
         : key(key), parent(parent), left(left), right(right) {}
 };
 
+class FibonacciHeap
+{
+    std::shared_ptr<Node> min;
+
+    FibonacciHeap() = default;
+
+public:
+    static FibonacciHeap &getInstance()
+    {
+        static auto self = FibonacciHeap();
+        return self;
+    }
+
+    void setMin(std::shared_ptr<Node> &min)
+    {
+        this->min = min;
+    }
+
+    std::shared_ptr<Node> getMin()
+    {
+        return min;
+    }
+
+    void insert(std::shared_ptr<Node> node)
+    {
+        std::shared_ptr<Node> left{min};
+        while (left->right != nullptr)
+        {
+            left = left->right;
+        }
+
+        left->right = node;
+        node->left = left;
+    }
+};
+
 int main()
 {
     std::shared_ptr min = std::make_shared<Node>(1);
