@@ -22,15 +22,7 @@ class FibonacciHeap
 {
     std::shared_ptr<Node> min;
 
-    FibonacciHeap() = default;
-
 public:
-    static FibonacciHeap &getInstance()
-    {
-        static auto self = FibonacciHeap();
-        return self;
-    }
-
     void setMin(std::shared_ptr<Node> &min)
     {
         this->min = min;
@@ -43,14 +35,47 @@ public:
 
     void insert(std::shared_ptr<Node> node)
     {
-        std::shared_ptr<Node> left{min};
-        while (left->right != nullptr)
+        std::shared_ptr<Node> leftNode{min};
+        while (leftNode->right != nullptr)
         {
-            left = left->right;
+            leftNode = leftNode->right;
         }
 
-        left->right = node;
-        node->left = left;
+        leftNode->right = node;
+        node->left = leftNode;
+
+        if (min->key > node->key)
+        {
+            min = node;
+        }
+    }
+
+    int extractMin()
+    {
+        if (min->child != nullptr)
+        {
+            auto rightestParent = min;
+            while (rightestParent->right != nullptr)
+            {
+                rightestParent = rightestParent->right;
+            }
+
+            auto leftestChild = min->child;
+            while (leftestChild->left != nullptr)
+            {
+                leftestChild = leftestChild->left;
+            }
+
+            rightestParent->right = leftestChild;
+            leftestChild->left = rightestParent;
+
+            auto child = leftestChild;
+            do
+            {
+                child->parent = nullptr;
+                child->marked = false;
+            } while (child->right != nullptr);
+        }
     }
 };
 
