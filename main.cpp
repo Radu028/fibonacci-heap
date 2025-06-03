@@ -4,38 +4,36 @@
 struct Node
 {
     int key;
-    std::shared_ptr<Node> parent;
-    std::shared_ptr<Node> child;
-    std::shared_ptr<Node> left, right;
+    Node *parent;
+    Node *child;
+    Node *left, *right;
 
     bool marked{false};
     int degree;
 
     Node(int key) : key(key) {}
-    Node(int key, std::shared_ptr<Node> &parent) : key(key), parent(parent) {}
-    Node(int key, std::shared_ptr<Node> &parent, std::shared_ptr<Node> &left,
-         std::shared_ptr<Node> &right)
+    Node(int key, Node *parent) : key(key), parent(parent) {}
+    Node(int key, Node *parent, Node *left,
+         Node *right)
         : key(key), parent(parent), left(left), right(right) {}
 };
 
 class FibonacciHeap
 {
-    std::shared_ptr<Node> min;
+    Node *min;
+    int numNodes;
 
 public:
-    void setMin(std::shared_ptr<Node> &min)
-    {
-        this->min = min;
-    }
+    FibonacciHeap(Node *min) : min(min), numNodes(1) {}
 
-    std::shared_ptr<Node> getMin()
+    Node *getMin()
     {
         return min;
     }
 
-    void insert(std::shared_ptr<Node> node)
+    void insert(Node *node)
     {
-        std::shared_ptr<Node> leftNode{min};
+        Node *leftNode{min};
         while (leftNode->right != nullptr)
         {
             leftNode = leftNode->right;
@@ -48,6 +46,11 @@ public:
         {
             min = node;
         }
+
+        node->degree = 0;
+        node->marked = false;
+
+        numNodes++;
     }
 
     int extractMin()
@@ -76,6 +79,8 @@ public:
                 child->marked = false;
             } while (child->right != nullptr);
         }
+
+        int maxDegree = floor(log2(numNodes)) + 1;
     }
 };
 
