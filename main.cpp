@@ -6,11 +6,11 @@
 struct Node
 {
     int key;
-    Node *parent, *child;
-    Node *prev, *next;
+    Node *parent{nullptr}, *child{nullptr};
+    Node *prev{this}, *next{this};
 
     bool marked{false};
-    int degree;
+    int degree{0};
 
     Node(int key) : key(key) {}
 };
@@ -22,15 +22,16 @@ class FibonacciHeap
 
 public:
     FibonacciHeap() : min(nullptr), numNodes(0) {}
-    FibonacciHeap(Node *min) : min(min), numNodes(1) {}
 
-    Node *getMin()
+    int getMin()
     {
-        return min;
+        return min->key;
     }
 
-    void insert(Node *node)
+    void insert(int key)
     {
+        auto node = new Node(key);
+
         if (min == nullptr)
         {
             min = node;
@@ -59,6 +60,9 @@ public:
 
     int extractMin()
     {
+        if (min == nullptr)
+            return -1;
+
         if (min->child != nullptr)
         {
             auto firstChild = min->child;
@@ -80,17 +84,26 @@ public:
             oldNext->prev = nextChild;
         }
 
-        int maxDegree = floor(log2(numNodes)) + 1;
-        std::vector<Node *> aux(maxDegree, nullptr);
+        int minVal = min->key;
 
-        auto currNode = min->next;
+        if (min->next == min)
+        {
+            delete min;
+            min = nullptr;
+            numNodes--;
+            return minVal;
+        }
 
+        auto newMin = min->next;
         min->next->prev = min->prev;
         min->prev->next = min->next;
-
-        int minVal = min->key;
         delete min;
         numNodes--;
+
+        int maxDegree = floor(log2(numNodes)) + 1;
+        std::vector<Node *> aux(maxDegree + 1, nullptr);
+
+        auto currNode = newMin;
 
         if (numNodes == 0)
         {
@@ -99,8 +112,12 @@ public:
         }
 
         min = currNode;
+        auto startNode = currNode;
+
         do
         {
+            auto nextNode = currNode->next;
+
             int degree = currNode->degree;
             if (aux[degree] == nullptr)
             {
@@ -161,19 +178,19 @@ public:
                 }
             }
 
-            currNode = currNode->next;
-            if (min->key > currNode->key)
+            currNode = nextNode;
+            if (newMin->key > currNode->key)
             {
-                min = currNode;
+                newMin = currNode;
             }
-        } while (currNode != min);
+        } while (currNode != startNode);
 
+        min = newMin;
         return minVal;
     }
 };
 
 int main()
 {
-    std::shared_ptr min = std::make_shared<Node>(1);
     return 0;
 }
