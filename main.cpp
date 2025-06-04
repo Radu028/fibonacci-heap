@@ -188,6 +188,19 @@ public:
         min = newMin;
         return minVal;
     }
+
+    void decreaseKey(Node *node, int newKey)
+    {
+        if (node->parent != nullptr)
+        {
+            if (node->parent->child = node)
+            {
+                if (node != node->next)
+                {
+                }
+            }
+        }
+    }
 };
 
 int main()
