@@ -42,6 +42,10 @@ class FibonacciHeap
             node->prev->next = node->next;
         }
 
+        auto parent = node->parent;
+
+        node->parent->degree--;
+        node->parent = nullptr;
         node->marked = false;
 
         min->next->prev = node;
@@ -49,19 +53,25 @@ class FibonacciHeap
         min->next = node;
         node->prev = min;
 
-        if (!node->parent->marked)
+        if (parent->parent == nullptr)
+        {
+            return;
+        }
+
+        if (!parent->marked)
         {
             node->parent->marked = true;
         }
         else
         {
             cutOut(node->parent);
-        }
-        node->parent = nullptr;
+        };
     }
 
 public:
-    FibonacciHeap() : min(nullptr), numNodes(0) {}
+    FibonacciHeap() : min(nullptr), numNodes(0)
+    {
+    }
 
     int getMin()
     {
@@ -231,13 +241,22 @@ public:
 
     void decreaseKey(Node *node, int newKey)
     {
-        if (node->parent == nullptr || node->parent->key < newKey)
+        if (newKey >= node->key)
         {
             return;
         }
 
-        cutOut(node);
         node->key = newKey;
+
+        if (node->parent != nullptr && node->parent->key > newKey)
+        {
+            cutOut(node);
+        }
+
+        if (node->key < min->key)
+        {
+            min = node;
+        }
     }
 };
 
