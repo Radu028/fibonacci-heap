@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <cmath>
 #include <memory>
 
 struct Node
@@ -19,6 +21,7 @@ class FibonacciHeap
     int numNodes;
 
 public:
+    FibonacciHeap() : min(nullptr), numNodes(0) {}
     FibonacciHeap(Node *min) : min(min), numNodes(1) {}
 
     Node *getMin()
@@ -28,20 +31,28 @@ public:
 
     void insert(Node *node)
     {
-        auto nextMinNode = min->next;
-
-        min->next = node;
-        node->prev = min;
-        nextMinNode->prev = node;
-        node->next = nextMinNode;
-
-        if (min->key > node->key)
+        if (min == nullptr)
         {
             min = node;
+            node->prev = node->next = node;
         }
+        else
+        {
+            auto nextMinNode = min->next;
 
-        node->degree = 0;
-        node->marked = false;
+            min->next = node;
+            node->prev = min;
+            nextMinNode->prev = node;
+            node->next = nextMinNode;
+
+            if (min->key > node->key)
+            {
+                min = node;
+            }
+
+            node->degree = 0;
+            node->marked = false;
+        }
 
         numNodes++;
     }
@@ -81,6 +92,12 @@ public:
         delete min;
         numNodes--;
 
+        if (numNodes == 0)
+        {
+            min = nullptr;
+            return minVal;
+        }
+
         min = currNode;
         do
         {
@@ -93,6 +110,9 @@ public:
             {
                 if (aux[degree]->key < currNode->key)
                 {
+                    currNode->next->prev = currNode->prev;
+                    currNode->prev->next = currNode->next;
+
                     auto child = aux[degree]->child;
                     if (child != nullptr)
                     {
@@ -115,6 +135,9 @@ public:
                 }
                 else
                 {
+                    aux[degree]->next->prev = aux[degree]->prev;
+                    aux[degree]->prev->next = aux[degree]->next;
+
                     auto child = currNode->child;
                     if (child != nullptr)
                     {
