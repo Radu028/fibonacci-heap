@@ -27,22 +27,23 @@ class FibonacciHeap
             return;
         }
 
+        auto parent = node->parent;
+
         if (node->next == node)
         {
-            node->parent->child = nullptr;
+            parent->child = nullptr;
         }
         else
         {
-            if (node->parent->child == node)
+            if (parent->child == node)
             {
-                node->parent->child = node->next;
+                parent->child = node->next;
             }
 
             node->next->prev = node->prev;
             node->prev->next = node->next;
         }
 
-        auto parent = node->parent;
         parent->degree--;
 
         node->parent = nullptr;
@@ -78,7 +79,7 @@ public:
         return min->key;
     }
 
-    void insert(int key)
+    Node *insert(int key)
     {
         auto node = new Node(key);
 
@@ -106,6 +107,8 @@ public:
         }
 
         numNodes++;
+
+        return node;
     }
 
     int extractMin()
