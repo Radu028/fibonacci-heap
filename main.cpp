@@ -70,12 +70,15 @@ class FibonacciHeap
     }
 
 public:
-    FibonacciHeap() : min(nullptr), numNodes(0)
-    {
-    }
+    FibonacciHeap() : min(nullptr), numNodes(0) {}
 
     int getMin()
     {
+        if (min == nullptr)
+        {
+            return -1;
+        }
+
         return min->key;
     }
 
@@ -147,16 +150,18 @@ public:
             return minVal;
         }
 
-        auto newMin = min->next;
+        std::vector<Node *> rootNodes;
+        auto currNode = min->next;
+        while (currNode != min)
+        {
+            rootNodes.push_back(currNode);
+            currNode = currNode->next;
+        }
+
         min->next->prev = min->prev;
         min->prev->next = min->next;
         delete min;
         numNodes--;
-
-        int maxDegree = floor(log2(numNodes)) + 1;
-        std::vector<Node *> aux(maxDegree + 1, nullptr);
-
-        auto currNode = newMin;
 
         if (numNodes == 0)
         {
@@ -164,81 +169,60 @@ public:
             return minVal;
         }
 
-        min = currNode;
-        auto startNode = currNode;
+        int maxDegree = floor(log2(numNodes)) + 1;
+        std::vector<Node *> aux(maxDegree + 1, nullptr);
 
-        do
+        for (auto node : rootNodes)
         {
-            auto nextNode = currNode->next;
-
-            int degree = currNode->degree;
-            if (aux[degree] == nullptr)
+            int degree = node->degree;
+            while (aux[degree] != nullptr)
             {
-                aux[degree] = currNode;
-            }
-            else
-            {
-                if (aux[degree]->key < currNode->key)
+                auto other = aux[degree];
+                if (node->key > other->key)
                 {
-                    currNode->next->prev = currNode->prev;
-                    currNode->prev->next = currNode->next;
+                    std::swap(node, other);
+                }
 
-                    auto child = aux[degree]->child;
-                    if (child != nullptr)
-                    {
-                        auto nextChild = child->next;
-                        child->next = currNode;
-                        currNode->prev = child;
-                        nextChild->prev = currNode;
-                        currNode->next = nextChild;
-                    }
-                    else
-                    {
-                        aux[degree]->child = currNode;
-                    }
+                other->next->prev = other->prev;
+                other->prev->next = other->next;
 
-                    currNode->parent = aux[degree];
-
-                    aux[degree]->degree++;
-                    aux[degree + 1] = aux[degree];
-                    aux[degree] = nullptr;
+                if (node->child == nullptr)
+                {
+                    node->child = other;
+                    other->next = other->prev = other;
                 }
                 else
                 {
-                    aux[degree]->next->prev = aux[degree]->prev;
-                    aux[degree]->prev->next = aux[degree]->next;
+                    auto firstChild = node->child;
+                    auto lastChild = firstChild->prev;
 
-                    auto child = currNode->child;
-                    if (child != nullptr)
-                    {
+                    lastChild->next = other;
+                    other->prev = lastChild;
+                    other->next = firstChild;
+                    firstChild->prev = other;
+                }
 
-                        auto nextChild = child->next;
-                        child->next = aux[degree];
-                        aux[degree]->prev = child;
-                        nextChild->prev = aux[degree];
-                        aux[degree]->next = nextChild;
-                    }
-                    else
-                    {
-                        currNode->child = aux[degree];
-                    }
+                other->parent = node;
+                node->degree++;
+                aux[degree] = nullptr;
+                degree++;
+            }
 
-                    aux[degree]->parent = currNode;
+            aux[degree] = node;
+        }
 
-                    currNode->degree++;
-                    aux[degree + 1] = currNode;
-                    aux[degree] = nullptr;
+        min = nullptr;
+        for (auto node : aux)
+        {
+            if (node != nullptr)
+            {
+                if (min == nullptr || node->key < min->key)
+                {
+                    min = node;
                 }
             }
+        }
 
-            currNode = nextNode;
-            if (newMin->key > currNode->key)
-            {
-                newMin = currNode;
-            }
-        } while (currNode != startNode);
-
-        min = newMin;
         return minVal;
     }
 
@@ -265,5 +249,34 @@ public:
 
 int main()
 {
+    FibonacciHeap heap;
+
+    std::cout << "=== Fibonacci Heap Demo ===" << std::endl;
+
+    std::cout << "Inserting: 10, 5, 20, 3, 15" << std::endl;
+    auto node5 = heap.insert(5);
+    auto node10 = heap.insert(10);
+    auto node3 = heap.insert(3);
+    auto node20 = heap.insert(20);
+    auto node15 = heap.insert(15);
+
+    std::cout << "Min after inserts: " << heap.getMin() << std::endl;
+
+    std::cout << "Extracting min: " << heap.extractMin() << std::endl;
+    std::cout << "New min: " << heap.getMin() << std::endl;
+
+    std::cout << "Decreasing key of node (15) to 1" << std::endl;
+    heap.decreaseKey(node15, 1);
+    std::cout << "Min after decrease: " << heap.getMin() << std::endl;
+
+    std::cout << "Extracting all remaining:" << std::endl;
+    while (heap.getMin() != -1)
+    {
+        std::cout << heap.extractMin() << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "=== Demo Complete ===" << std::endl;
+
     return 0;
 }
