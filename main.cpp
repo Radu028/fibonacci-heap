@@ -43,8 +43,8 @@ class FibonacciHeap
         }
 
         auto parent = node->parent;
+        parent->degree--;
 
-        node->parent->degree--;
         node->parent = nullptr;
         node->marked = false;
 
