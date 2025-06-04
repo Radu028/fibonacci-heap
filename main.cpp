@@ -6,16 +6,16 @@ struct Node
     int key;
     Node *parent;
     Node *child;
-    Node *left, *right;
+    Node *prev, *next;
 
     bool marked{false};
     int degree;
 
     Node(int key) : key(key) {}
     Node(int key, Node *parent) : key(key), parent(parent) {}
-    Node(int key, Node *parent, Node *left,
-         Node *right)
-        : key(key), parent(parent), left(left), right(right) {}
+    Node(int key, Node *parent, Node *prev,
+         Node *next)
+        : key(key), parent(parent), prev(prev), next(next) {}
 };
 
 class FibonacciHeap
@@ -33,14 +33,12 @@ public:
 
     void insert(Node *node)
     {
-        Node *leftNode{min};
-        while (leftNode->right != nullptr)
-        {
-            leftNode = leftNode->right;
-        }
+        auto nextMinNode = min->next;
 
-        leftNode->right = node;
-        node->left = leftNode;
+        min->next = node;
+        node->prev = min;
+        nextMinNode->prev = node;
+        node->next = nextMinNode;
 
         if (min->key > node->key)
         {
@@ -49,6 +47,7 @@ public:
 
         node->degree = 0;
         node->marked = false;
+        node->prev = node->next = node;
 
         numNodes++;
     }
@@ -57,30 +56,27 @@ public:
     {
         if (min->child != nullptr)
         {
-            auto rightestParent = min;
-            while (rightestParent->right != nullptr)
-            {
-                rightestParent = rightestParent->right;
-            }
-
-            auto leftestChild = min->child;
-            while (leftestChild->left != nullptr)
-            {
-                leftestChild = leftestChild->left;
-            }
-
-            rightestParent->right = leftestChild;
-            leftestChild->left = rightestParent;
-
-            auto child = leftestChild;
+            auto prevChild = min->child;
+            auto currChild = min->child;
             do
             {
-                child->parent = nullptr;
-                child->marked = false;
-            } while (child->right != nullptr);
+                currChild->parent = nullptr;
+                currChild->marked = false;
+                currChild = currChild->next;
+            } while (currChild != prevChild);
+
+            auto nextChild = prevChild->prev;
+            auto oldNext = min->next;
+
+            min->next = prevChild;
+            prevChild->prev = min;
+
+            nextChild->next = oldNext;
+            oldNext->prev = nextChild;
         }
 
         int maxDegree = floor(log2(numNodes)) + 1;
+        std::vector<Node *> aux(maxDegree, nullptr);
     }
 };
 
