@@ -60,11 +60,11 @@ class FibonacciHeap
 
         if (!parent->marked)
         {
-            node->parent->marked = true;
+            parent->marked = true;
         }
         else
         {
-            cutOut(node->parent);
+            cutOut(parent);
         };
     }
 
